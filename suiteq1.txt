@@ -1,0 +1,12 @@
+50move
+aline
+anticlockwise
+clockwise
+empty
+hard
+havespace
+nomove
+nospace
+noturn
+qt1
+repeated

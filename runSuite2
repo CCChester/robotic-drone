@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# check error conditions
+test_errCond()
+{
+  if [ ! -r  ${suite_in} ]; then
+    echo "missing or unreadable .in or .out files" >&2
+    exit 1
+  elif [ ! -r ${suite_out} ]; then
+    echo "missing or unreadable .in or .out files" >&2
+    exit 1
+  else
+      test_suite
+  fi
+}
+
+test_suite()
+{
+# run actual test case
+  TMPFILE=`mktemp testResult.XXXX`
+# check the read permission and the existence of the .arg file
+  if [ -e ${tests}.args ]; then
+    if [ ! -r ${tests}.args ]; then
+      echo "missing or unreadable .agrs files" >&2
+      exit 1
+    else
+      ${prog} `cat ${tests}.args` < ${suite_in} >${TMPFILE}
+    fi
+  else 
+    ${prog} < ${suite_in} >${TMPFILE}
+  fi  
+  diff ${suite_out} ${TMPFILE} >/dev/null
+  if [ $? -ne 0 ]; then
+    Message
+  fi
+  rm -f ${TMPFILE}
+}
+
+# Message of failed test
+Message()
+{
+echo "Test failed: ${tests}"
+echo "Input:"
+cat ${suite_in}
+echo "Expected:"
+cat ${suite_out}
+echo "Actual:"
+cat ${TMPFILE}
+}
+
+if [ ${#} -ne 2 ]; then
+  echo "incorrect number of command line arguments" >&2 
+  exit 1
+else
+for tests in `cat $1`; do
+# get the file from the directory
+suite_in=${tests}.in
+suite_out=${tests}.out
+prog=$2
+#run the test suite
+test_errCond
+done
+fi
